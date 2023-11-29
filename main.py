@@ -14,22 +14,22 @@ ev3 = EV3Brick()
 # Initialize the motors.
 motor_drive = Motor(Port.A)
 motor_turn  = Motor(Port.B)
-sensor = TouchSensor(Port.S1)
+
 while True:
     b = brick.buttons()
-    if Button.LEFT in b:
+    if Button.UP in b:
         motor_turn.dc(-50)
 
-    elif Button.RIGHT in b:
+    elif Button.DOWN in b:
         motor_turn.dc(50)
     else:
         motor_turn.dc(0)
 
-    if sensor.pressed() is True:
-        sensor_val = 'True' 
-        motor_drive.dc(-50)
+    if Button.LEFT in b:
+                motor_drive.dc(50)
+    elif Button.RIGHT in b:
+        motor_drive.dc(-30)
     else:
-        sensor_val = 'False'
         motor_drive.dc(0)
-    print('Speed ' + str(motor_drive.speed()) + ', Angle '+ str(motor_drive.angle())+', Sensor 1 '+ sensor_val)
+    print('Speed ' + str(motor_drive.speed()) + ', Angle '+ str(motor_drive.angle()))
     wait(100)
