@@ -14,11 +14,11 @@ class Drive:
         self.drive_speed_rps=self.drive_speed_degs/360.0
         
     def calc_speed_mmps(self):
-        self.drive_speed_mmps=self.drive_speed_degs*lego_wheel_circumference_mm
+        self.drive_speed_mmps=self.drive_speed_degs*self.lego_wheel_circumference_mm
     
     def interpolate_distance(self):
-        calc_speed_rps(self)
-        calc_speed_mmps(self)
-        self.drive_distance_mm=drive_distance_mm+(self.drive_speed_mmps*self.Ts)
+        self.calc_speed_rps()
+        self.calc_speed_mmps()
+        self.drive_distance_mm=self.drive_distance_mm+(self.drive_speed_mmps*self.Ts)
         
     

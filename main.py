@@ -2,6 +2,7 @@
 from pybricks.hubs import EV3Brick
 from pybricks.ev3devices import Motor
 from pybricks.ev3devices import TouchSensor
+from pybricks.ev3devices import UltrasonicSensor
 from pybricks.parameters import Port
 from pybricks.robotics import DriveBase
 from pybricks.tools import wait
@@ -19,7 +20,7 @@ sm = StateMachine()
 drv= Drive()
 # State machine init end
 
-two_motors = False
+two_motors = True
 # Initialize the EV3 Brick.
 ev3 = EV3Brick()
 
@@ -41,7 +42,7 @@ while True:
         sm.receive_input_event("no_event")
     sm.run()
     if sm.current_state == "s_init_0":
-        #print("we are in init")
+        pass
     elif sm.current_state == "s_man_mode":
         drv.read_motor_speed_degs(motor_drive.speed())
         drv.interpolate_distance()
@@ -52,7 +53,7 @@ while True:
             elif Button.DOWN in b:
                 motor_turn.dc(50)
             else:
-            motor_turn.dc(0)
+                motor_turn.dc(0)
         
         if Button.LEFT in b:
             motor_drive.dc(50)

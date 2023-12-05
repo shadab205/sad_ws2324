@@ -19,20 +19,22 @@ class StateMachine:
 
     def run(self):
         #while self.is_running:
-        print("-----------------------------------------")
-        print("Current state:" + str(self.current_state))
+        #print("-----------------------------------------")
+        #print("Current state:" + str(self.current_state))
 
         event = self.get_valid_event()
-        print("event="+event)
+        #print("event="+event)
         if not self.transition(event):
-            print("Invalid event. No transition occurred.")
+            pass
+            #print("Invalid event. No transition occurred.")
             
         self.is_running = self.check_termination_condition()
-        print("-----------------------------------------")    
+        pass
+        #print("-----------------------------------------")    
     def get_valid_event(self):
         while True:
             parsed_event = self.input_event
-            print("parsed_event="+parsed_event)
+            #print("parsed_event="+parsed_event)
             if parsed_event is not None:
                 return parsed_event
             else:
@@ -42,14 +44,16 @@ class StateMachine:
         return True
     
     def s_init_0_operation():
-        print("Performing init_0 operation")
+        pass
+        #print("Performing init_0 operation")
 
     def s_man_mode_operation():
-        print("Performing man_mode operation")
+        pass
+        #print("Performing man_mode operation")
         
     def receive_input_event(self,user_input):
         self.input_event=user_input
-        print("User input="+self.input_event)
+        #print("User input="+self.input_event)
         """
 class StateTransitions:
     @staticmethod
