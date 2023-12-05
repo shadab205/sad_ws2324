@@ -12,11 +12,11 @@ import math
 # State machine init start
 
 from state_machine import StateMachine
-
+from drive import Drive
 
 b = brick.buttons()
 sm = StateMachine()
-
+drv= Drive()
 # State machine init end
 
 two_motors = False
@@ -26,9 +26,12 @@ ev3 = EV3Brick()
 # Initialize the motors.
 motor_drive = Motor(Port.A)
 
+#init sensor
+sen_us=UltrasonicSensor(Port.S1)
+
 if two_motors == True:
     motor_turn  = Motor(Port.B)
-
+print("Rover_distance, Sensor_distance")
 while True:
 
     b = brick.buttons()
@@ -38,27 +41,24 @@ while True:
         sm.receive_input_event("no_event")
     sm.run()
     if sm.current_state == "s_init_0":
-        print("we are in init")
+        #print("we are in init")
     elif sm.current_state == "s_man_mode":
-        print("we are in man_mode")
-    wait(1000)
-'''
-while True:
-    b = brick.buttons()
-    if two_motors == True:
-        if Button.UP in b:
-            motor_turn.dc(-50)
-        elif Button.DOWN in b:
-            motor_turn.dc(50)
+        drv.read_motor_speed_degs(motor_drive.speed())
+        drv.interpolate_distance()
+        b = brick.buttons()
+        if two_motors == True:
+            if Button.UP in b:
+                motor_turn.dc(-50)
+            elif Button.DOWN in b:
+                motor_turn.dc(50)
+            else:
+            motor_turn.dc(0)
+        
+        if Button.LEFT in b:
+            motor_drive.dc(50)
+        elif Button.RIGHT in b:
+            motor_drive.dc(-30)
         else:
-           motor_turn.dc(0)
-    
-    if Button.LEFT in b:
-        motor_drive.dc(50)
-    elif Button.RIGHT in b:
-        motor_drive.dc(-30)
-    else:
-        motor_drive.dc(0)
-    print('Speed ' + str(motor_drive.speed()) + ', Angle '+ str(motor_drive.angle()))
+            motor_drive.dc(0)
+        print(str(drv.drive_distance_mm) + ','+ str(sen_us.distance()))
     wait(100)
-'''
