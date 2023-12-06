@@ -33,6 +33,7 @@ sen_us=UltrasonicSensor(Port.S1)
 if two_motors == True:
     motor_turn  = Motor(Port.B)
 print("Rover_distance, Sensor_distance")
+
 while True:
 
     b = brick.buttons()
@@ -40,7 +41,9 @@ while True:
         sm.receive_input_event("button_center")
     else:
         sm.receive_input_event("no_event")
+    
     sm.run()
+
     if sm.current_state == "s_init_0":
         pass
     elif sm.current_state == "s_man_mode":
@@ -54,12 +57,20 @@ while True:
                 motor_turn.dc(50)
             else:
                 motor_turn.dc(0)
-        
         if Button.LEFT in b:
             motor_drive.dc(50)
         elif Button.RIGHT in b:
             motor_drive.dc(-30)
         else:
             motor_drive.dc(0)
-        print(str(drv.drive_distance_mm) + ','+ str(sen_us.distance()))
+                            
+    elif sm.current_state == "s_semi_auto_mode":
+        if Button.UP in b:
+            start_distance=drv.drive_distance_mm;
+            while(start_distance-end_distance<=500):
+                motor_drive.dc(10)
+                end_distance=drv.drive_distance_mm;
+        
+
+    print(str(drv.drive_distance_mm) + ','+ str(sen_us.distance()))
     wait(100)

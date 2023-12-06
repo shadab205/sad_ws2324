@@ -6,6 +6,7 @@ class UltrasonicSensor:
         self.us_sense_map_y=[]
         self.us_sense_map_sen_dis=[]
         self.us_sense_map_y_dis=[]
+        
         self.val_fac=0
         self.val_st=-1
         self.val_end=-1
