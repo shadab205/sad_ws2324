@@ -34,6 +34,11 @@ if two_motors == True:
     motor_turn  = Motor(Port.B)
 print("Rover_distance, Sensor_distance")
 
+#variables
+start_distance=0
+end_distance=0
+run_flag=False
+
 while True:
 
     b = brick.buttons()
@@ -43,12 +48,13 @@ while True:
         sm.receive_input_event("no_event")
     
     sm.run()
+    drv.read_motor_speed_degs(motor_drive.speed())
+    drv.interpolate_distance()
 
     if sm.current_state == "s_init_0":
         pass
     elif sm.current_state == "s_man_mode":
-        drv.read_motor_speed_degs(motor_drive.speed())
-        drv.interpolate_distance()
+
         b = brick.buttons()
         if two_motors == True:
             if Button.UP in b:
@@ -65,12 +71,19 @@ while True:
             motor_drive.dc(0)
                             
     elif sm.current_state == "s_semi_auto_mode":
-        if Button.UP in b:
+        if Button.LEFT in b and run_flag==False:
             start_distance=drv.drive_distance_mm;
-            while(start_distance-end_distance<=500):
-                motor_drive.dc(10)
+            run_flag=True
+
+        if run_flag==True:
+                motor_drive.dc(50)
                 end_distance=drv.drive_distance_mm;
+                if end_distance-start_distance>500:
+                    run_flag=False
+        else:
+            motor_drive.dc(0)
         
 
-    print(str(drv.drive_distance_mm) + ','+ str(sen_us.distance()))
+    print(str(sm.current_state)+','+str(drv.drive_distance_mm) +','+str(run_flag)+ ','+ str(sen_us.distance())+ ','+str(start_distance)+','+str(end_distance)+','+ str(end_distance-start_distance))
+    #print(str(sm.current_state))
     wait(100)
