@@ -28,7 +28,8 @@ ev3 = EV3Brick()
 motor_drive = Motor(Port.A)
 
 #init sensor
-sen_us=UltrasonicSensor(Port.S1)
+sen_us = UltrasonicSensor(Port.S1)
+sen_gyro = GyroSensor(Port.S2, positive_direction=Direction.CLOCKWISE)
 
 if two_motors == True:
     motor_turn  = Motor(Port.B)
@@ -42,17 +43,24 @@ run_flag=False
 while True:
 
     b = brick.buttons()
+
     if Button.CENTER in b:
         sm.receive_input_event("button_center")
     else:
         sm.receive_input_event("no_event")
     
     sm.run()
+
     drv.read_motor_speed_degs(motor_drive.speed())
     drv.interpolate_distance()
-
+    drv.get_theta=(sen_gyro.angle())
+    drv.calc_coordinates()
+    
     if sm.current_state == "s_init_0":
-        pass
+        sen_gyro.reset_angle(0)
+        drv.xc=0
+        drv.yc=0
+        drv.theta=0    
     elif sm.current_state == "s_man_mode":
 
         b = brick.buttons()
