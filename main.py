@@ -97,7 +97,7 @@ while True:
                 motor_drive.dc(50)
 
                 steer_pi.run_pi(0,steer_angle)
-                motor_turn.dc(steer_pi.out)
+                motor_turn.track_target(steer_pi.out)
                 end_distance=drv.drive_distance_mm;
 
                 if end_distance-start_distance>500:
