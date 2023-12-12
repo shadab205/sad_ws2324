@@ -9,11 +9,14 @@ from pybricks.tools import wait
 from pybricks.parameters import Button
 from pybricks import ev3brick as brick
 import math
-
+from pid_controller import pid
 # State machine init start
 
 from state_machine import StateMachine
 from drive import Drive
+
+# PI controller init
+
 
 b = brick.buttons()
 sm = StateMachine()
@@ -31,6 +34,9 @@ motor_drive = Motor(Port.A)
 sen_us = UltrasonicSensor(Port.S1)
 sen_gyro = GyroSensor(Port.S2, positive_direction=Direction.CLOCKWISE)
 
+#init_pi
+steer_pi = pid(0.1,0,0,30,0.1)
+
 if two_motors == True:
     motor_turn  = Motor(Port.B)
 print("Rover_distance, Sensor_distance")
@@ -39,6 +45,7 @@ print("Rover_distance, Sensor_distance")
 start_distance=0
 end_distance=0
 run_flag=False
+steer_angle=0
 
 while True:
 
@@ -55,12 +62,14 @@ while True:
     drv.interpolate_distance()
     drv.get_theta=(sen_gyro.angle())
     drv.calc_coordinates()
-    
+    steer_angle = drv.theta;
+
     if sm.current_state == "s_init_0":
         sen_gyro.reset_angle(0)
         drv.xc=0
         drv.yc=0
-        drv.theta=0    
+        drv.theta=0
+            
     elif sm.current_state == "s_man_mode":
 
         b = brick.buttons()
@@ -84,8 +93,13 @@ while True:
             run_flag=True
 
         if run_flag==True:
+            
                 motor_drive.dc(50)
+
+                steer_pi.run_pi(0,steer_angle)
+                motor_turn.dc(steer_pi.out)
                 end_distance=drv.drive_distance_mm;
+
                 if end_distance-start_distance>500:
                     run_flag=False
         else:
