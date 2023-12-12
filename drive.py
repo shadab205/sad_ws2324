@@ -1,4 +1,4 @@
-import umath
+import math
 class Drive:
     def __init__(self):
         self.drive_distance_mm=0
@@ -29,7 +29,5 @@ class Drive:
         self.theta=input_theta
 
     def calc_coordinates(self):
-        self.xc=self.xc+(self.drive_speed_mmps*self.Ts*umath.cos(self.theta))
-        self.yc=self.xc+(self.drive_speed_mmps*self.Ts*umath.sin(self.theta))
-    
-    
+        self.xc=self.xc+(self.drive_speed_mmps*self.Ts*math.cos(self.theta))
+        self.yc=self.xc+(self.drive_speed_mmps*self.Ts*math.sin(self.theta))

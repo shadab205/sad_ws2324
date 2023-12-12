@@ -1,13 +1,14 @@
 class StateMachine:
     def __init__(self):
-        self.states = ["s_init_0", "s_man_mode", "s_semi_auto_mode"]
+        self.states = ["s_init_0", "s_man_mode", "s_semi_auto_mode","s_pre_semi_auto_mode"]
         self.transitions = [
             {"current_state": "s_init_0", "event": "button_center", "next_state": "s_man_mode"},
-            {"current_state": "s_man_mode", "event": "button_center", "next_state": "s_semi_auto_mode"},
+            {"current_state": "s_man_mode", "event": "button_center", "next_state": "s_pre_semi_auto_mode"},
             {"current_state": "s_semi_auto_mode", "event": "button_center", "next_state": "s_man_mode"},
             {"current_state": "s_init_0", "event": "E_STOP", "next_state": "s_init_0"},
             {"current_state": "s_man_mode", "event": "E_STOP", "next_state": "s_init_0"},
             {"current_state": "s_semi_auto_mode", "event": "E_STOP", "next_state": "s_init_0"},
+            {"current_state": "s_pre_semi_auto_mode", "event": "button_center", "next_state": "s_semi_auto_mode"},
             ]
         self.events = ["button_center","button_left","button_right","no_event","E_STOP"]
         self.current_state = self.states[0]
