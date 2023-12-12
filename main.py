@@ -103,11 +103,9 @@ while True:
                 motor_turn.dc(-steer_pi.out)
             elif(motor_turn.angle()<-360 && -steer_pi.out<0):
                 motor_turn.dc(-steer_pi.out)
-            #elif(motor_turn.angle()>360):
-            #    motor_turn.dc(-10)
-            #elif(motor_turn.angle()<-360):
-            #    motor_turn.dc(10)                
-            #motor_turn.track_target(steer_pi.out)
+            else:
+                motor_turn.dc(0)
+                
             end_distance=drv.drive_distance_mm;
 
             if end_distance-start_distance>800:
