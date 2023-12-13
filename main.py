@@ -41,6 +41,9 @@ if two_motors == True:
     motor_turn  = Motor(Port.B)
 print("Rover_distance, Sensor_distance")
 
+#touchsensor
+emergency_button=TouchSensor(Port.S4)
+
 #variables
 start_distance=0
 end_distance=0
@@ -48,7 +51,21 @@ run_flag=False
 steer_angle=0
 turn_command=0
 
+button_press_ctr = 0
+
 while True:
+
+    c = emergency_button.pressed()
+    if (c == True):
+        button_press_ctr = button_press_ctr+1
+        
+    else:
+        if(button_press_ctr>0):
+            button_press_ctr=button_press_ctr-1
+    
+    if button_press_ctr>5:
+        sm.receive_input_event("E_STOP")
+        button_press_ctr=0
 
     b = brick.buttons()
 
