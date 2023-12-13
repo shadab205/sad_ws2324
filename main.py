@@ -35,7 +35,7 @@ sen_us = UltrasonicSensor(Port.S1)
 sen_gyro = GyroSensor(Port.S2,Direction.CLOCKWISE)
 
 #init_pi
-steer_pi = pid(1,0,0,50,0.1)
+steer_pi = pid(2.5,0,0,70,0.1)
 
 if two_motors == True:
     motor_turn  = Motor(Port.B)
@@ -52,25 +52,30 @@ steer_angle=0
 turn_command=0
 
 button_press_ctr = 0
+center_button_ctr =0
 
 while True:
 
     c = emergency_button.pressed()
     if (c == True):
-        button_press_ctr = button_press_ctr+1
-        
+        button_press_ctr = button_press_ctr+1 
     else:
         if(button_press_ctr>0):
             button_press_ctr=button_press_ctr-1
     
-    if button_press_ctr>5:
+    b = brick.buttons()
+    if (Button.CENTER in b):
+        center_button_ctr = center_button_ctr+1 
+    else:
+        if(center_button_ctr>0):
+            center_button_ctr=center_button_ctr-1
+
+    if center_button_ctr>1:
+        sm.receive_input_event("button_center")
+#        print("center")
+    elif button_press_ctr>5:
         sm.receive_input_event("E_STOP")
         button_press_ctr=0
-
-    b = brick.buttons()
-
-    if Button.CENTER in b:
-        sm.receive_input_event("button_center")
     else:
         sm.receive_input_event("no_event")
     
@@ -107,6 +112,9 @@ while True:
             motor_drive.dc(0)
     elif sm.current_state == "s_pre_semi_auto_mode":
         motor_turn.reset_angle(0)
+        steer_pi.out=0
+        steer_pi.ref=0
+        steer_pi.fdb=0
     elif sm.current_state == "s_semi_auto_mode":
         if Button.LEFT in b and run_flag==False:
             start_distance=drv.drive_distance_mm;
@@ -114,26 +122,36 @@ while True:
 
         if run_flag==True:
                
-            motor_drive.dc(30)
+            motor_drive.dc(50)
 
             steer_pi.run_pi(0,steer_angle)
-            if(motor_turn.angle()>360 and -steer_pi.out<0):
-                turn_command=-steer_pi.out
-            elif(motor_turn.angle()<-360 and -steer_pi.out>0):
-                turn_command=-steer_pi.out
-            else:
-                turn_command=0
+            turn_command=-steer_pi.out
 
-            motor_turn.dc(turn_command)    
+#            if(motor_turn.angle()>500 and turn_command<0):
+#                motor_turn.dc(turn_command)
+#            elif(motor_turn.angle()<-500 and turn_command>0):
+#                motor_turn.dc(turn_command)
+#            else:
+#                motor_turn.dc(0)
+
+#            if(motor_turn.angle()<360 and motor_turn.angle()>-360):
+#                 motor_turn.dc(turn_command)  
+            if(motor_turn.angle()>500):  
+                turn_command=turn_command-30
+            elif(motor_turn.angle()<-500):  
+                turn_command=turn_command+30
+                
+            motor_turn.dc(turn_command)                  
             end_distance=drv.drive_distance_mm;
 
             if end_distance-start_distance>800:
                 run_flag=False
         else:
             motor_drive.dc(0)
+            motor_turn.dc(0)
         
 
     #print(str(sm.current_state)+','+str(drv.drive_distance_mm) +','+str(run_flag)+ ','+ str(sen_us.distance())+ ','+str(start_distance)+','+str(end_distance)+','+ str(end_distance-start_distance))
     #print(str(sm.current_state))
-    print(str(sm.current_state)+','+str(drv.theta)+','+str(motor_turn.angle())+','+str(steer_pi.ref)+','+str(steer_pi.fdb)+','+str(steer_pi.error)+','+str(steer_pi.out))
+    print(str(sm.current_state)+','+str(drv.theta)+','+str(motor_turn.angle())+','+str(steer_pi.ref)+','+str(steer_pi.fdb)+','+str(steer_pi.error)+','+str(turn_command))
     wait(100)
