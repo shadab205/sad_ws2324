@@ -46,6 +46,7 @@ start_distance=0
 end_distance=0
 run_flag=False
 steer_angle=0
+turn_command=0
 
 while True:
 
@@ -99,13 +100,14 @@ while True:
             motor_drive.dc(30)
 
             steer_pi.run_pi(0,steer_angle)
-            if(motor_turn.angle()>360 && -steer_pi.out>0):
-                motor_turn.dc(-steer_pi.out)
-            elif(motor_turn.angle()<-360 && -steer_pi.out<0):
-                motor_turn.dc(-steer_pi.out)
+            if(motor_turn.angle()>360 and -steer_pi.out<0):
+                turn_command=-steer_pi.out
+            elif(motor_turn.angle()<-360 and -steer_pi.out>0):
+                turn_command=-steer_pi.out
             else:
-                motor_turn.dc(0)
-                
+                turn_command=0
+
+            motor_turn.dc(turn_command)    
             end_distance=drv.drive_distance_mm;
 
             if end_distance-start_distance>800:
