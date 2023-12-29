@@ -53,7 +53,7 @@ turn_command=0
 
 button_press_ctr = 0
 center_button_ctr =0
-
+man=0
 while True:
 
     c = emergency_button.pressed()
@@ -105,7 +105,7 @@ while True:
             else:
                 motor_turn.dc(0)
         if Button.LEFT in b:
-            motor_drive.dc(50)
+            motor_drive.dc(30)
         elif Button.RIGHT in b:
             motor_drive.dc(-30)
         else:
@@ -117,41 +117,73 @@ while True:
         steer_pi.fdb=0
     elif sm.current_state == "s_semi_auto_mode":
         if Button.LEFT in b and run_flag==False:
-            start_distance=drv.drive_distance_mm;
             run_flag=True
+            man=11
 
         if run_flag==True:
-               
-            motor_drive.dc(50)
 
-            steer_pi.run_pi(0,steer_angle)
-            turn_command=-steer_pi.out
+            if(motor_turn.angle()>-720 and man==11):
+                motor_turn.dc(-50)
+            elif(motor_turn.angle<=-720 and man==11):
+                man=12
+            else:
+                motor_turn.dc(0)    
+            
+            if(drv.theta>-90 and man==12):
+                motor_drive.dc(-30)
+            elif(drv.theta<=-90 and man == 12):
+                man = 21
+            else:
+                motor_drive.dc(0)
 
-#            if(motor_turn.angle()>500 and turn_command<0):
-#                motor_turn.dc(turn_command)
-#            elif(motor_turn.angle()<-500 and turn_command>0):
-#                motor_turn.dc(turn_command)
-#            else:
-#                motor_turn.dc(0)
+            if(motor_turn.angle()<720 and man==21):
+                motor_turn.dc(50)
+            elif(motor_turn.angle()>=720 and man==21):
+                man=22
+            else:
+                motor_turn.dc(0) 
+    
+            if(drv.theta<-59 and man==22):
+                motor_drive.dc(-30)
+            elif(drv.theta>=-59 and man ==22):
+                man=31
+            else:
+                motor_drive.dc(0)
 
-#            if(motor_turn.angle()<360 and motor_turn.angle()>-360):
-#                 motor_turn.dc(turn_command)  
-            if(motor_turn.angle()>500):  
-                turn_command=turn_command-30
-            elif(motor_turn.angle()<-500):  
-                turn_command=turn_command+30
-                
-            motor_turn.dc(turn_command)                  
-            end_distance=drv.drive_distance_mm;
+            if(motor_turn.angle()>-720 and man==31):
+                motor_turn.dc(-50)
+            elif(motor_turn.angle()<=-720 and man ==31):
+                man=32
+            else:
+                motor_turn.dc(0)
+                man=32 
 
-            if end_distance-start_distance>800:
+            if(drv.theta<-40 and man==32):
+                motor_drive.dc(-30)
+            elif(drv.theta>=-40 and man ==32):
+                man=41
+            else:
+                motor_drive.dc(0)
+
+            if(motor_turn.angle()<720 and man==41):
+                motor_turn.dc(50)
+            elif(motor_turn.angle()>=720 and man==41):
+                man=42
+            else:
+                motor_turn.dc(0) 
+
+            if(drv.theta<-5 and man==42):
+                motor_drive.dc(-30)
+            elif(drv.theta>=-5 and man ==42):
+                motor_drive.dc(0)
                 run_flag=False
-        else:
-            motor_drive.dc(0)
-            motor_turn.dc(0)
-        
+                man=0
+            else:
+                motor_drive.dc(0)
+                motor_turn.dc(0)
+                run_flag=False
 
-    #print(str(sm.current_state)+','+str(drv.drive_distance_mm) +','+str(run_flag)+ ','+ str(sen_us.distance())+ ','+str(start_distance)+','+str(end_distance)+','+ str(end_distance-start_distance))
+    #print(str(sm.current_state)+','+str(drv.drive_distance_mm) +','+str(drv.drive_distance_mm-start_distance))
     #print(str(sm.current_state))
-    print(str(sm.current_state)+','+str(drv.theta)+','+str(motor_turn.angle())+','+str(steer_pi.ref)+','+str(steer_pi.fdb)+','+str(steer_pi.error)+','+str(turn_command))
+    print(str(sm.current_state)+','+str(drv.theta)+','+str(motor_turn.angle())+','+str(man))
     wait(100)
