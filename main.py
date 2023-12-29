@@ -16,20 +16,23 @@ from state_machine import StateMachine
 from drive import Drive
 
 class man_point:
-    def __init__(self, x, y, z, condition):
+    def __init__(self, x, y, z, phi, condition):
         self.samples = x
         self.drive_dir = y
         self.steer_dir = z
+        self.max_steer_angle = phi
         self.steer_complete = condition
 
 
 # Creating an array of Point objects
+max_steer=650
 man_arr = [
-    man_point(47, -1,  1, False),
-    man_point(15, -1, -1, False),
-    man_point(9,   1,  1, False),
-    man_point(8, -1, -1, False),
-    man_point(6,   1,  1, False)
+    man_point(37, -1,  1, max_steer,False),
+    man_point(13, -1, -1, max_steer,False),
+    man_point(7,   1,  1, max_steer,False),
+    man_point(8,  -1, -1, max_steer,False),
+    man_point(4,   1,  1, max_steer,False),
+    man_point(4,  -1, -1, 1,False),
 ]
 # PI controller init
 
@@ -142,25 +145,25 @@ while True:
             man_sample=0
 
         if run_flag==True:
-            if man_arr[man].steer_complete==False and man<5:
+            if man_arr[man].steer_complete==False and man<6:
                 if man_arr[man].steer_dir == -1:
-                    if(motor_turn.angle()>-max_steer):
+                    if(motor_turn.angle()>-man_arr[man].max_steer_angle):
                         motor_turn.dc(50*man_arr[man].steer_dir)
-                    elif(motor_turn.angle()<=-max_steer):
+                    elif(motor_turn.angle()<=-man_arr[man].max_steer_angle):
                         man_arr[man].steer_complete=True
                     else:
                         motor_turn.dc(0)
                 elif man_arr[man].steer_dir == 1:
-                    if(motor_turn.angle()< max_steer):
+                    if(motor_turn.angle() < man_arr[man].max_steer_angle):
                         motor_turn.dc(50*man_arr[man].steer_dir)
-                    elif(motor_turn.angle()>=max_steer):
+                    elif(motor_turn.angle()>=man_arr[man].max_steer_angle):
                         man_arr[man].steer_complete=True
                     else:
                         motor_turn.dc(0)
             else:
                 motor_turn.dc(0)
             
-            if(man_arr[man].steer_complete==True and man<5):
+            if(man_arr[man].steer_complete==True and man<6):
                 if(man_sample<=man_arr[man].samples):
                     motor_drive.dc(man_arr[man].drive_dir*max_drive_turn)
                     man_sample=man_sample+1
@@ -173,7 +176,7 @@ while True:
             else:
                 motor_drive.dc(0)
 
-            if man==5:
+            if man==6:
                 run_flag=False
 
     #print(str(sm.current_state)+','+str(drv.drive_distance_mm) +','+str(drv.drive_distance_mm-start_distance))
