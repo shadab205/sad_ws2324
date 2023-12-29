@@ -15,9 +15,26 @@ from pid_controller import pid
 from state_machine import StateMachine
 from drive import Drive
 
+class man_point:
+    def __init__(self, x, y, z, condition):
+        self.samples = x
+        self.drive_dir = y
+        self.steer_dir = z
+        self.steer_complete = condition
+
+
+# Creating an array of Point objects
+man_arr = [
+    man_point(47, -1,  1, False),
+    man_point(15, -1, -1, False),
+    man_point(9,   1,  1, False),
+    man_point(8, -1, -1, False),
+    man_point(6,   1,  1, False)
+]
 # PI controller init
 
-
+max_steer=650
+max_drive_turn=40
 b = brick.buttons()
 sm = StateMachine()
 drv= Drive()
@@ -54,6 +71,7 @@ turn_command=0
 button_press_ctr = 0
 center_button_ctr =0
 man=0
+man_sample=0
 while True:
 
     c = emergency_button.pressed()
@@ -115,75 +133,50 @@ while True:
         steer_pi.out=0
         steer_pi.ref=0
         steer_pi.fdb=0
+        for man_var in man_arr:
+            man_var.steer_complete=False
     elif sm.current_state == "s_semi_auto_mode":
         if Button.LEFT in b and run_flag==False:
             run_flag=True
-            man=11
+            man=0
+            man_sample=0
 
         if run_flag==True:
-
-            if(motor_turn.angle()>-720 and man==11):
-                motor_turn.dc(-50)
-            elif(motor_turn.angle<=-720 and man==11):
-                man=12
+            if man_arr[man].steer_complete==False and man<5:
+                if man_arr[man].steer_dir == -1:
+                    if(motor_turn.angle()>-max_steer):
+                        motor_turn.dc(50*man_arr[man].steer_dir)
+                    elif(motor_turn.angle()<=-max_steer):
+                        man_arr[man].steer_complete=True
+                    else:
+                        motor_turn.dc(0)
+                elif man_arr[man].steer_dir == 1:
+                    if(motor_turn.angle()< max_steer):
+                        motor_turn.dc(50*man_arr[man].steer_dir)
+                    elif(motor_turn.angle()>=max_steer):
+                        man_arr[man].steer_complete=True
+                    else:
+                        motor_turn.dc(0)
             else:
-                motor_turn.dc(0)    
+                motor_turn.dc(0)
             
-            if(drv.theta>-90 and man==12):
-                motor_drive.dc(-30)
-            elif(drv.theta<=-90 and man == 12):
-                man = 21
+            if(man_arr[man].steer_complete==True and man<5):
+                if(man_sample<=man_arr[man].samples):
+                    motor_drive.dc(man_arr[man].drive_dir*max_drive_turn)
+                    man_sample=man_sample+1
+                elif(man_sample>=man_arr[man].samples):
+                    motor_drive.dc(0)
+                    man_sample=0
+                    man=man+1
+                else:
+                    motor_drive.dc(0)
             else:
                 motor_drive.dc(0)
 
-            if(motor_turn.angle()<720 and man==21):
-                motor_turn.dc(50)
-            elif(motor_turn.angle()>=720 and man==21):
-                man=22
-            else:
-                motor_turn.dc(0) 
-    
-            if(drv.theta<-59 and man==22):
-                motor_drive.dc(-30)
-            elif(drv.theta>=-59 and man ==22):
-                man=31
-            else:
-                motor_drive.dc(0)
-
-            if(motor_turn.angle()>-720 and man==31):
-                motor_turn.dc(-50)
-            elif(motor_turn.angle()<=-720 and man ==31):
-                man=32
-            else:
-                motor_turn.dc(0)
-                man=32 
-
-            if(drv.theta<-40 and man==32):
-                motor_drive.dc(-30)
-            elif(drv.theta>=-40 and man ==32):
-                man=41
-            else:
-                motor_drive.dc(0)
-
-            if(motor_turn.angle()<720 and man==41):
-                motor_turn.dc(50)
-            elif(motor_turn.angle()>=720 and man==41):
-                man=42
-            else:
-                motor_turn.dc(0) 
-
-            if(drv.theta<-5 and man==42):
-                motor_drive.dc(-30)
-            elif(drv.theta>=-5 and man ==42):
-                motor_drive.dc(0)
-                run_flag=False
-                man=0
-            else:
-                motor_drive.dc(0)
-                motor_turn.dc(0)
+            if man==5:
                 run_flag=False
 
     #print(str(sm.current_state)+','+str(drv.drive_distance_mm) +','+str(drv.drive_distance_mm-start_distance))
     #print(str(sm.current_state))
-    print(str(sm.current_state)+','+str(drv.theta)+','+str(motor_turn.angle())+','+str(man))
+    print(str(sm.current_state)+','+str(drv.theta)+','+str(motor_turn.angle())+','+str(man)+','+str(man_sample))
     wait(100)
