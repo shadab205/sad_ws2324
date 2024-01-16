@@ -39,5 +39,3 @@ class pid:
             self.out=self.isat_max
         elif(self.out < self.isat_min):
             self.out=self.isat_min
-
-
