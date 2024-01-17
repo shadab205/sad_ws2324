@@ -4,12 +4,16 @@ class StateMachine:
         self.transitions = [
             {"current_state": "s_init_0", "event": "button_center", "next_state": "s_man_mode"},
             {"current_state": "s_man_mode", "event": "button_center", "next_state": "s_pre_semi_auto_mode"},
-            {"current_state": "s_semi_auto_mode", "event": "button_center", "next_state": "s_man_mode"},
+            {"current_state": "s_pre_semi_auto_mode", "event": "button_center", "next_state": "s_line_follower_mode"},
             {"current_state": "s_line_follower_mode", "event": "park_begin", "next_state": "s_semi_auto_mode"},
+            {"current_state": "s_semi_auto_mode", "event": "E_STOP", "next_state": "s_man_mode"},
+            
+
             {"current_state": "s_init_0", "event": "E_STOP", "next_state": "s_init_0"},
             {"current_state": "s_man_mode", "event": "E_STOP", "next_state": "s_init_0"},
-            {"current_state": "s_semi_auto_mode", "event": "E_STOP", "next_state": "s_init_0"},
+            ##{"current_state": "s_semi_auto_mode", "event": "E_STOP", "next_state": "s_init_0"},
             {"current_state": "s_pre_semi_auto_mode", "event": "E_STOP", "next_state": "s_init_0"},
+            {"current_state": "s_line_follower_mode", "event": "E_STOP", "next_state": "s_init_0"}
             ]
         self.events = ["button_center","button_left","button_right","no_event","E_STOP","park_begin"]
         self.current_state = self.states[0]

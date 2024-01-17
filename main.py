@@ -5,7 +5,7 @@ from pybricks.ev3devices import UltrasonicSensor, TouchSensor, GyroSensor, Color
 from pybricks.parameters import Port
 from pybricks.robotics import DriveBase
 from pybricks.tools import wait
-from pybricks.parameters import Button, Direction
+from pybricks.parameters import Button, Direction, Color
 from pybricks import ev3brick as brick
 import math
 from pid_controller import pid
@@ -26,13 +26,13 @@ class man_point:
 # Creating an array of Point objects
 max_steer=650
 man_arr = [
-    man_point(10,  1,  1, 1, False),
-    man_point(37, -1,  1, max_steer,False),
-    man_point(13, -1, -1, max_steer,False),
-    man_point(7,   1,  1, max_steer,False),
-    man_point(8,  -1, -1, max_steer,False),
-    man_point(4,   1,  1, max_steer,False),
-    man_point(4,  -1, -1, 1,False),
+    man_point(17,  1,  1, -1, False),
+    man_point(30, -1,  -1, max_steer,False),
+    man_point(9, -1, 1, max_steer,False),
+    man_point(7,   1,  -1, max_steer,False),
+    man_point(6,  -1, 1, max_steer,False),
+    man_point(4,   1,  -1, max_steer,False),
+    man_point(2,  -1, 1, 1,False),
 ]
 # PI controller init
 
@@ -101,8 +101,9 @@ while True:
             center_button_ctr=center_button_ctr-1
 
     if center_button_ctr>1:
-        if sm.current_state == "s_line_follower_mode" and parking_spot_detected = True:
-            sm.receive_input_event("park_brgin")
+        if sm.current_state == "s_line_follower_mode" and parking_spot_detected == True:
+            sm.receive_input_event("park_begin")
+            print("park begin")
         else:
             sm.receive_input_event("button_center")
 #        print("center")
@@ -112,7 +113,7 @@ while True:
     else:
         sm.receive_input_event("no_event")
     
-
+    color = color_sensor.color()
     sm.run()
 
     drv.read_motor_speed_degs(motor_drive.speed())
@@ -128,6 +129,8 @@ while True:
         drv.yc=0
         drv.theta=0
         motor_turn.reset_angle(0)
+        motor_drive.dc(0)
+        motor_turn.dc(0)
             
     elif sm.current_state == "s_man_mode":
 
@@ -149,6 +152,7 @@ while True:
         steer_pi.out=0
         steer_pi.ref=0
         steer_pi.fdb=0
+        parking_spot_detected=False
         for man_var in man_arr:
             man_var.steer_complete=False
     elif sm.current_state == "s_line_follower_mode":
@@ -162,15 +166,15 @@ while True:
             color_feedback = 1
 
         lf_cont.run_pi(0, color_feedback)
-        steer_motor.track_target(lf_cont.out)
-        drive_motor.run(100)
+        motor_turn.track_target(lf_cont.out)
+        motor_drive.run(50)
 
         if parking_spot_detected==True:
-            drive_motor.dc(0)
+            motor_drive.dc(0)
         else:
-            drive_motor.dc(50)  
+            motor_drive.dc(50)  
 
-        distance = ultra_sensor.distance()
+        distance = sen_us .distance()
 
         if distance > 200 and detect_flag == False:
             start_distance = drv.drive_distance_mm
@@ -180,6 +184,8 @@ while True:
             park_distance = drv.drive_distance_mm - start_distance
             if park_distance > 300:
                 parking_spot_detected = True
+                motor_turn.track_target(0)
+                
             else :
                 parking_spot_detected = False
             if distance < 200:
@@ -228,5 +234,5 @@ while True:
 
     #print(str(sm.current_state)+','+str(drv.drive_distance_mm) +','+str(drv.drive_distance_mm-start_distance))
     #print(str(sm.current_state))
-    print(str(sm.current_state)+','+str(drv.theta)+','+str(motor_turn.angle())+','+str(man)+','+str(man_sample))
+    print(str(sm.current_state)+','+str(drv.theta)+','+str(motor_turn.angle())+','+str(man)+','+str(man_sample)+','+str(parking_spot_detected))
     wait(100)
