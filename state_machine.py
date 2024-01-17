@@ -4,7 +4,7 @@ class StateMachine:
         self.transitions = [
             {"current_state": "s_init_0", "event": "button_center", "next_state": "s_man_mode"},
             {"current_state": "s_man_mode", "event": "button_center", "next_state": "s_pre_semi_auto_mode"},
-            {"current_state": "s_pre_semi_auto_mode", "event": "button_center", "next_state": "s_line_follower_mode"},
+            {"current_state": "s_pre_semi_auto_mode", "event": "button_left", "next_state": "s_line_follower_mode"},
             {"current_state": "s_line_follower_mode", "event": "park_begin", "next_state": "s_semi_auto_mode"},
             {"current_state": "s_semi_auto_mode", "event": "E_STOP", "next_state": "s_man_mode"},
             

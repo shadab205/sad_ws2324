@@ -24,14 +24,14 @@ class man_point:
 
 
 # Creating an array of Point objects
-max_steer=650
+max_steer=600
 man_arr = [
-    man_point(17,  1,  1, -1, False),
-    man_point(30, -1,  -1, max_steer,False),
-    man_point(9, -1, 1, max_steer,False),
-    man_point(7,   1,  -1, max_steer,False),
+    man_point(12,  1,  1, -1, False),
+    man_point(24, -1,  -1, max_steer,False),
+    man_point(7, -1, 1, max_steer,False),
+    man_point(5,   1,  -1, max_steer,False),
     man_point(6,  -1, 1, max_steer,False),
-    man_point(4,   1,  -1, max_steer,False),
+    man_point(3,   1,  -1, max_steer,False),
     man_point(2,  -1, 1, 1,False),
 ]
 # PI controller init
@@ -73,6 +73,7 @@ turn_command=0
 
 button_press_ctr = 0
 center_button_ctr =0
+left_button_ctr =0
 man=0
 man_sample=0
 
@@ -94,22 +95,35 @@ while True:
             button_press_ctr=button_press_ctr-1
     
     b = brick.buttons()
+    
     if (Button.CENTER in b):
         center_button_ctr = center_button_ctr+2 
     else:
         if(center_button_ctr>0):
             center_button_ctr=center_button_ctr-1
+    
+    if (Button.LEFT in b):
+        left_button_ctr =left_button_ctr+2
+    else:
+        if(left_button_ctr>0):
+            left_button_ctr=left_button_ctr-1;
+
 
     if center_button_ctr>1:
         if sm.current_state == "s_line_follower_mode" and parking_spot_detected == True:
             sm.receive_input_event("park_begin")
             print("park begin")
+            center_button_ctr=0
         else:
             sm.receive_input_event("button_center")
+            center_button_ctr=0
 #        print("center")
     elif button_press_ctr>5:
         sm.receive_input_event("E_STOP")
         button_press_ctr=0
+    elif left_button_ctr>1:
+        sm.receive_input_event("button_left")
+        left_button_ctr=0
     else:
         sm.receive_input_event("no_event")
     
@@ -200,18 +214,26 @@ while True:
         if run_flag==True:
             if man_arr[man].steer_complete==False and man<6:
                 if man_arr[man].steer_dir == -1:
-                    if(motor_turn.angle()>-man_arr[man].max_steer_angle):
-                        motor_turn.dc(50*man_arr[man].steer_dir)
-                    elif(motor_turn.angle()<=-man_arr[man].max_steer_angle):
+                    # if(motor_turn.angle()>-man_arr[man].max_steer_angle):
+                    #     motor_turn.dc(50*man_arr[man].steer_dir)
+                    # elif(motor_turn.angle()<=-man_arr[man].max_steer_angle):
+                    #     man_arr[man].steer_complete=True
+                    # else:
+                    #     motor_turn.dc(0)
+                    motor_turn.track_target(man_arr[man].max_steer_angle*man_arr[man].steer_dir)
+                    if(motor_turn.angle()<=-man_arr[man].max_steer_angle):
                         man_arr[man].steer_complete=True
-                    else:
                         motor_turn.dc(0)
                 elif man_arr[man].steer_dir == 1:
-                    if(motor_turn.angle() < man_arr[man].max_steer_angle):
-                        motor_turn.dc(50*man_arr[man].steer_dir)
-                    elif(motor_turn.angle()>=man_arr[man].max_steer_angle):
+                    # if(motor_turn.angle() < man_arr[man].max_steer_angle):
+                    #     motor_turn.dc(50*man_arr[man].steer_dir)
+                    # elif(motor_turn.angle()>=man_arr[man].max_steer_angle):
+                    #     man_arr[man].steer_complete=True
+                    # else:
+                    #     motor_turn.dc(0)
+                    motor_turn.track_target(man_arr[man].max_steer_angle*man_arr[man].steer_dir)
+                    if(motor_turn.angle()>=man_arr[man].max_steer_angle):
                         man_arr[man].steer_complete=True
-                    else:
                         motor_turn.dc(0)
             else:
                 motor_turn.dc(0)
