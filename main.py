@@ -26,13 +26,13 @@ class man_point:
 # Creating an array of Point objects
 max_steer=600
 man_arr = [
-    man_point(12,  1,  1, -1, False),
-    man_point(24, -1,  -1, max_steer,False),
-    man_point(7, -1, 1, max_steer,False),
-    man_point(5,   1,  -1, max_steer,False),
-    man_point(6,  -1, 1, max_steer,False),
-    man_point(3,   1,  -1, max_steer,False),
-    man_point(2,  -1, 1, 1,False),
+    man_point(12,   1,   1,     2    ,False),
+    man_point(13,  -1,  -1, max_steer,False),
+    man_point(10,  -1,   1,     2    ,False),
+    man_point( 2,  -1,  -1, max_steer,False),
+    man_point(8,  -1,    1, max_steer,False),
+    man_point( 5,   1,  -1,max_steer,False),
+    
 ]
 # PI controller init
 
@@ -46,6 +46,7 @@ drv= Drive()
 two_motors = True
 # Initialize the EV3 Brick.
 ev3 = EV3Brick()
+ev3.speaker.beep()
 
 # Initialize the motors.
 motor_drive = Motor(Port.A)
@@ -84,7 +85,7 @@ color_feedback = 0
 
 detect_flag = False
 parking_spot_detected = False
-
+previous_state='init_0'
 while True:
 
     c = emergency_button.pressed()
@@ -188,7 +189,7 @@ while True:
         else:
             motor_drive.dc(50)  
 
-        distance = sen_us .distance()
+        distance = sen_us.distance()
 
         if distance > 200 and detect_flag == False:
             start_distance = drv.drive_distance_mm
@@ -198,6 +199,7 @@ while True:
             park_distance = drv.drive_distance_mm - start_distance
             if park_distance > 300:
                 parking_spot_detected = True
+                ev3.speaker.beep()
                 motor_turn.track_target(0)
                 
             else :
@@ -213,6 +215,7 @@ while True:
 
         if run_flag==True:
             if man_arr[man].steer_complete==False and man<6:
+
                 if man_arr[man].steer_dir == -1:
                     # if(motor_turn.angle()>-man_arr[man].max_steer_angle):
                     #     motor_turn.dc(50*man_arr[man].steer_dir)
@@ -220,7 +223,7 @@ while True:
                     #     man_arr[man].steer_complete=True
                     # else:
                     #     motor_turn.dc(0)
-                    motor_turn.track_target(man_arr[man].max_steer_angle*man_arr[man].steer_dir)
+                    motor_turn.track_target((man_arr[man].max_steer_angle*man_arr[man].steer_dir) - 1)
                     if(motor_turn.angle()<=-man_arr[man].max_steer_angle):
                         man_arr[man].steer_complete=True
                         motor_turn.dc(0)
@@ -231,7 +234,7 @@ while True:
                     #     man_arr[man].steer_complete=True
                     # else:
                     #     motor_turn.dc(0)
-                    motor_turn.track_target(man_arr[man].max_steer_angle*man_arr[man].steer_dir)
+                    motor_turn.track_target((man_arr[man].max_steer_angle*man_arr[man].steer_dir) + 1)
                     if(motor_turn.angle()>=man_arr[man].max_steer_angle):
                         man_arr[man].steer_complete=True
                         motor_turn.dc(0)
@@ -246,6 +249,7 @@ while True:
                     motor_drive.dc(0)
                     man_sample=0
                     man=man+1
+                    ev3.speaker.beep()
                 else:
                     motor_drive.dc(0)
             else:
@@ -255,6 +259,12 @@ while True:
                 run_flag=False
 
     #print(str(sm.current_state)+','+str(drv.drive_distance_mm) +','+str(drv.drive_distance_mm-start_distance))
-    #print(str(sm.current_state))
-    print(str(sm.current_state)+','+str(drv.theta)+','+str(motor_turn.angle())+','+str(man)+','+str(man_sample)+','+str(parking_spot_detected))
+    print(str(sen_us.distance()))
+    #print(str(sm.current_state)+','+str(drv.theta)+','+str(motor_turn.angle())+','+str(man)+','+str(man_sample)+','+str(parking_spot_detected))
+    ev3.screen.draw_text(5, 50, str(sm.current_state))
+    if(previous_state != sm.current_state):
+        ev3.speaker.beep()
+    
+    previous_state=sm.current_state
     wait(100)
+    ev3.screen.clear()
