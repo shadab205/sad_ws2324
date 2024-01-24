@@ -7,6 +7,7 @@ from pybricks.robotics import DriveBase
 from pybricks.tools import wait
 from pybricks.parameters import Button, Direction, Color
 from pybricks import ev3brick as brick
+from pybricks import media
 import math
 from pid_controller import pid
 # State machine init start
@@ -26,12 +27,12 @@ class man_point:
 # Creating an array of Point objects
 max_steer=600
 man_arr = [
-    man_point(12,   1,   1,     2    ,False),
-    man_point(13,  -1,  -1, max_steer,False),
-    man_point(10,  -1,   1,     2    ,False),
+    man_point(16,   1,   1,     2    ,False),
+    man_point(15,  -1,  -1, max_steer,False),
+    man_point(14,  -1,   1,     2    ,False),
     man_point( 2,  -1,  -1, max_steer,False),
     man_point(8,  -1,    1, max_steer,False),
-    man_point( 5,   1,  -1,max_steer,False),
+    man_point( 6,   1,  -1,max_steer,False),
     
 ]
 # PI controller init
@@ -47,6 +48,7 @@ two_motors = True
 # Initialize the EV3 Brick.
 ev3 = EV3Brick()
 ev3.speaker.beep()
+
 
 # Initialize the motors.
 motor_drive = Motor(Port.A)
