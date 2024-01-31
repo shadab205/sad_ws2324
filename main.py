@@ -27,12 +27,13 @@ class man_point:
 # Creating an array of Point objects
 max_steer=600
 man_arr = [
-    man_point(16,   1,   1,     2    ,False),
-    man_point(15,  -1,  -1, max_steer,False),
-    man_point(14,  -1,   1,     2    ,False),
-    man_point( 2,  -1,  -1, max_steer,False),
-    man_point(8,  -1,    1, max_steer,False),
-    man_point( 6,   1,  -1,max_steer,False),
+    man_point(7,   1,   1,     2    ,False),
+    man_point(14,  -1,  -1, max_steer,False),
+    man_point(15,  -1,   1,     2    ,False),
+    man_point( 1,  -1,  -1, max_steer,False),
+    man_point(11,  -1,    1, max_steer,False),
+    man_point( 5,   1,  -1,max_steer,False),
+    man_point( 3,  -1,  1, max_steer,False),
     
 ]
 # PI controller init
@@ -85,8 +86,25 @@ color_sensor = ColorSensor(Port.S3)
 lf_cont = pid(200,0,0,200,0.1)
 color_feedback = 0
 
-detect_flag = False
-parking_spot_detected = False
+detect_flag = 0
+
+
+parking_spot_detected = 0;
+detect_obj1_flag = 0;
+obj1_valid = 0;
+obj1_last_distance=0;
+start_distance_obj1=0;
+obj1_distance=0;
+parking_length_detected=0;
+park_distance=0;
+detect_obj2_flag = 0;
+obj2_valid = 0;
+obj2_last_distance=0;
+start_distance_obj2=0;
+obj2_distance=0;
+
+park_flag=0
+
 previous_state='init_0'
 while True:
 
@@ -113,7 +131,7 @@ while True:
 
 
     if center_button_ctr>1:
-        if sm.current_state == "s_line_follower_mode" and parking_spot_detected == True:
+        if sm.current_state == "s_line_follower_mode" and parking_spot_detected == 1:
             sm.receive_input_event("park_begin")
             print("park begin")
             center_button_ctr=0
@@ -169,7 +187,7 @@ while True:
         steer_pi.out=0
         steer_pi.ref=0
         steer_pi.fdb=0
-        parking_spot_detected=False
+        parking_spot_detected=0
         for man_var in man_arr:
             man_var.steer_complete=False
     elif sm.current_state == "s_line_follower_mode":
@@ -184,30 +202,74 @@ while True:
 
         lf_cont.run_pi(0, color_feedback)
         motor_turn.track_target(lf_cont.out)
-        motor_drive.run(50)
+        motor_drive.run(40)
 
-        if parking_spot_detected==True:
+        if parking_spot_detected==1:
             motor_drive.dc(0)
         else:
-            motor_drive.dc(50)  
+            motor_drive.dc(40)  
 
         distance = sen_us.distance()
 
-        if distance > 200 and detect_flag == False:
-            start_distance = drv.drive_distance_mm
-            detect_flag = True
-            parking_spot_detected = False
-        if detect_flag == True:
-            park_distance = drv.drive_distance_mm - start_distance
-            if park_distance > 300:
-                parking_spot_detected = True
-                ev3.speaker.beep()
-                motor_turn.track_target(0)
-                
-            else :
-                parking_spot_detected = False
+        if distance<200 and detect_obj1_flag == 0 and detect_flag==0 and detect_obj2_flag==0 and parking_length_detected ==0:
+            start_distance_obj1 = drv.drive_distance_mm;
+            detect_obj1_flag = 1;
+            obj1_valid = 0;
+        
+        if detect_obj1_flag == 1:
+            obj1_distance = drv.drive_distance_mm - start_distance_obj1
+            if obj1_distance > 80:
+                obj1_valid = 1
+            else:
+                obj1_valid = 0;
+            
             if distance < 200:
-                detect_flag = False
+                obj1_last_distance = distance;
+        
+        if distance >= 200 and detect_flag == 0 and obj1_valid ==1 and detect_obj2_flag==0 and parking_length_detected ==0  :
+            start_distance = drv.drive_distance_mm;
+            detect_flag = 1;
+            parking_length_detected = 0;
+            detect_obj1_flag =0 ;
+        
+        if detect_flag == 1:
+            park_distance = drv.drive_distance_mm - start_distance;
+            if park_distance > 280 and park_distance < 525:
+                parking_length_detected = 1;
+            elif park_distance > 525:
+                detect_flag = 0;
+                parking_length_detected = 0;
+            
+            #if distance < 200 and park_distance < 425:
+            #    detect_flag = 0;
+            #    parking_length_detected=0;
+
+        
+        if distance <=200 and parking_length_detected == 1 and detect_obj2_flag==0:
+            start_distance_obj2 = drv.drive_distance_mm;
+            detect_obj2_flag = 1;
+            obj2_valid = 0;
+            detect_flag=0;
+    
+        if detect_obj2_flag == 1:
+            obj2_distance = drv.drive_distance_mm - start_distance_obj2
+            if obj2_distance > 95:
+                obj2_valid = 1;
+            else:
+                obj2_valid = 0;
+            
+            if distance > 200 :
+                detect_obj2_flag = 0
+                obj1_valid =0 
+                obj2_valid =0
+                detect_flag =0
+                detect_obj1_flag=0
+                parking_length_detected=0
+        
+        if obj1_valid == 1 and obj2_valid == 1 and parking_length_detected ==1:
+            parking_spot_detected =1
+
+    
 
     elif sm.current_state == "s_semi_auto_mode":
         if Button.LEFT in b and run_flag==False:
@@ -216,7 +278,7 @@ while True:
             man_sample=0
 
         if run_flag==True:
-            if man_arr[man].steer_complete==False and man<6:
+            if man_arr[man].steer_complete==False and man<7:
 
                 if man_arr[man].steer_dir == -1:
                     # if(motor_turn.angle()>-man_arr[man].max_steer_angle):
@@ -243,7 +305,7 @@ while True:
             else:
                 motor_turn.dc(0)
             
-            if(man_arr[man].steer_complete==True and man<6):
+            if(man_arr[man].steer_complete==True and man<7):
                 if(man_sample<=man_arr[man].samples):
                     motor_drive.dc(man_arr[man].drive_dir*max_drive_turn)
                     man_sample=man_sample+1
@@ -257,12 +319,14 @@ while True:
             else:
                 motor_drive.dc(0)
 
-            if man==6:
+            if man==7:
                 run_flag=False
 
     #print(str(sm.current_state)+','+str(drv.drive_distance_mm) +','+str(drv.drive_distance_mm-start_distance))
-    print(str(sen_us.distance()))
-    #print(str(sm.current_state)+','+str(drv.theta)+','+str(motor_turn.angle())+','+str(man)+','+str(man_sample)+','+str(parking_spot_detected))
+    #print(str(sen_us.distance()))
+    #print(str(sm.current_state)+','+str(drv.drive_distance_mm)+','+str(sen_us.distance())+','+str(park_distance)+','+str(parking_spot_detected)+','+str(obj1_valid)+','+str(obj2_valid)+','+str(parking_length_detected))
+    print(str(sm.current_state)+','+str(drv.drive_distance_mm)+','+str(sen_us.distance())+','+str(park_distance)+','+str(detect_obj1_flag)+','+str(detect_flag)+','+str(detect_obj2_flag)+','+str(parking_length_detected))
+    
     ev3.screen.draw_text(5, 50, str(sm.current_state))
     if(previous_state != sm.current_state):
         ev3.speaker.beep()
